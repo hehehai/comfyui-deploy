@@ -123,7 +123,7 @@ async def comfy_deploy_run(request):
     #             **res
     #         }
     #     })
-    
+
     if "node_errors" in res and res["node_errors"]:
         # Even tho there are node_errors it can still be run
         status = 400
@@ -158,7 +158,7 @@ async def websocket_handler(request):
         # Send initial state to the new client
         await send("status", { 'sid': sid }, sid)
         await send_first_time_log(sid)
-            
+
         async for msg in ws:
             if msg.type == aiohttp.WSMsgType.ERROR:
                 print('ws connection closed with exception %s' % ws.exception())
@@ -275,7 +275,7 @@ async def upload_file(prompt_id, filename, subfolder=None, content_type="image/p
 
     if output_dir is None:
         print(filename, "Upload failed: output_dir is None")
-        return 
+        return
 
     if subfolder != None:
         full_output_dir = os.path.join(output_dir, subfolder)
@@ -298,11 +298,11 @@ async def upload_file(prompt_id, filename, subfolder=None, content_type="image/p
 
     result = requests.get(target_url)
     ok = result.json()
-    
+
     with open(file, 'rb') as f:
         data = f.read()
         headers = {
-            "x-amz-acl": "public-read",
+            # "x-amz-acl": "public-read",
             "Content-Type": content_type,
             "Content-Length": str(len(data)),
         }
@@ -326,7 +326,7 @@ def is_prompt_done(prompt_id):
     if prompt_id in prompt_metadata and "done" in prompt_metadata[prompt_id]:
         if prompt_metadata[prompt_id]["done"] == True:
             return True
-    
+
     return False
 
 # Use to handle upload error and send back to ComfyDeploy
@@ -375,7 +375,7 @@ async def update_file_status(prompt_id, data, uploading, have_error=False, node_
             await send("uploading", {
                 "prompt_id": prompt_id,
             })
-    
+
     # if there are no nodes that are uploading, then we set the status to success
     elif not uploading and not have_pending_upload(prompt_id) and is_prompt_done(prompt_id=prompt_id):
         update_run(prompt_id, Status.SUCCESS)
@@ -398,7 +398,7 @@ async def upload_in_background(prompt_id, data, node_id=None, have_upload=True):
         gifs = data.get('gifs', [])
         for gif in gifs:
             await upload_file(prompt_id, gif.get("filename"), subfolder=gif.get("subfolder"), type=gif.get("type"), content_type=gif.get("format", "image/gif"))
-            
+
         if have_upload:
             await update_file_status(prompt_id, data, False, node_id=node_id)
     except Exception as e:
@@ -424,7 +424,7 @@ async def update_run_with_output(prompt_id, data, node_id=None):
 
         except Exception as e:
             await handle_error(prompt_id, data, e)
-            
+
 
         requests.post(status_endpoint, json=body)
 
